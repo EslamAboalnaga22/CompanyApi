@@ -53,6 +53,7 @@ namespace CompanyApi
             builder.Services.AddScoped<IEmployeeService, EmployeeService>();
             builder.Services.AddScoped<IDepartmentServic, DepartmentServic>();
             builder.Services.AddScoped<IProjectService, ProjectService>();
+            builder.Services.AddScoped<IAuthServices, AuthServices>();
 
             builder.Services.AddAutoMapper(typeof(Program));
 

@@ -2,6 +2,7 @@
 using CompanyApi.Dtos;
 using CompanyApi.Models;
 using CompanyApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,6 +26,7 @@ namespace CompanyApi.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetAllAsync()
         {
             var employees = await _employeeService.GetAll();
