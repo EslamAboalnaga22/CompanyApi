@@ -9,6 +9,6 @@ namespace CompanyApi.Models.Account
         public string FirstName { get; set; } = string.Empty;
         [MaxLength(50)]
         public string LastName { get; set; } = string.Empty;
-
+        public List<RefreshToken>? RefreshTokens { get; set; }
     }
 }

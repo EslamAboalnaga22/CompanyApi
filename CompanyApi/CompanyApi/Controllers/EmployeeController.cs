@@ -26,7 +26,7 @@ namespace CompanyApi.Controllers
         }
 
         [HttpGet]
-        [Authorize]
+        [Authorize(Roles ="User")]
         public async Task<IActionResult> GetAllAsync()
         {
             var employees = await _employeeService.GetAll();

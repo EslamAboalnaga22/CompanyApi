@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace CompanyApi.Services
@@ -47,11 +49,26 @@ namespace CompanyApi.Services
                 issuer: jwt.Issuer,
                 audience: jwt.Audience,
                 claims: claims,
-                expires: DateTime.Now.AddDays(10),
+                expires: DateTime.Now.AddMinutes(2),
                 signingCredentials: signingCredentials
                 );
 
             return jwtSecurityToken;
+        }
+        private RefreshToken GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            
+            using var generator = new RNGCryptoServiceProvider();
+
+            generator.GetBytes(randomNumber);
+
+            return new RefreshToken
+            {
+                Token = Convert.ToBase64String(randomNumber),
+                ExpireOn = DateTime.Now.AddMinutes(1),
+                CreatedOn = DateTime.Now
+            };
         }
 
         public async Task<AuthModel> RegisterAsync(RegisterModel model)
@@ -91,7 +108,7 @@ namespace CompanyApi.Services
                 UserName = user.UserName,
                 Email = user.Email,
                 IsAuthenticated = true,
-                ExmpireOn = jwtSecurityToken.ValidTo,
+                // ExmpireOn = jwtSecurityToken.ValidTo,
                 Roles = new List<string> { "User" },
                 Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken)
             };
@@ -117,8 +134,28 @@ namespace CompanyApi.Services
             authModel.UserName = user.UserName;
             authModel.IsAuthenticated = true;
             authModel.Roles = roleList.ToList();
-            authModel.ExmpireOn = jwtSecurityKey.ValidTo;
+            // authModel.ExmpireOn = jwtSecurityKey.ValidTo;
             authModel.Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityKey);
+
+            // refresh token
+            if(user.RefreshTokens.Any(x => x.IsActive))
+            {
+                var activeRefreshToken = user.RefreshTokens.FirstOrDefault(x => x.IsActive);
+
+                authModel.RefreshToken = activeRefreshToken.Token;
+                authModel.RefreshtokenExpiration = activeRefreshToken.ExpireOn;
+            }
+            else
+            {
+                var refreshToken = GenerateRefreshToken();
+
+                authModel.RefreshToken = refreshToken.Token;
+                authModel.RefreshtokenExpiration = refreshToken.ExpireOn;
+
+                user.RefreshTokens.Add(refreshToken);
+
+                await userManager.UpdateAsync(user);
+            }
 
             return authModel;
         }
