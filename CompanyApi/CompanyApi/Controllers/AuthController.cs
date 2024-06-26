@@ -40,6 +40,10 @@ namespace CompanyApi.Controllers
 
             if (!result.IsAuthenticated)
                 return BadRequest(result.Message);
+
+            if (!string.IsNullOrEmpty(result.RefreshToken))
+                SetRefreshTokenInCookies(result.RefreshToken, result.RefreshtokenExpiration);
+
             return Ok(result);
         }
 
@@ -55,6 +59,18 @@ namespace CompanyApi.Controllers
                 return BadRequest(result);
 
             return Ok(result);
+        }
+
+        //add refresh token with cookies
+        private void SetRefreshTokenInCookies(string refreshToken, DateTime expires)
+        {
+            var cookiesOption = new CookieOptions
+            {
+                HttpOnly = true,
+                Expires = expires.ToLocalTime()
+            };
+
+            Response.Cookies.Append("refreshToken", refreshToken, cookiesOption);
         }
     }
 }
