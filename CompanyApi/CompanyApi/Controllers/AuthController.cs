@@ -27,6 +27,8 @@ namespace CompanyApi.Controllers
             if (!result.IsAuthenticated)
                 return BadRequest(result.Message);
 
+            SetRefreshTokenInCookies(result.RefreshToken, result.RefreshtokenExpiration);
+
             return Ok(result);
         }
 
@@ -71,6 +73,39 @@ namespace CompanyApi.Controllers
             };
 
             Response.Cookies.Append("refreshToken", refreshToken, cookiesOption);
+        }
+
+        [HttpGet("refreshToken")]
+        public async Task<IActionResult> RefreshToken()
+        {
+            var refreshToken = Request.Cookies["refreshToken"];
+
+            var result = await authServices.RefreshTokenAsync(refreshToken);
+
+            if (!result.IsAuthenticated)
+                return BadRequest(result);
+
+            SetRefreshTokenInCookies(result.RefreshToken, result.RefreshtokenExpiration);
+
+            return Ok(result);
+        }
+
+        [HttpPost("revokeToken")]
+        public async Task<IActionResult> RevokeToken([FromBody] RevokeTokenDto model)
+        {
+            var token = model.Token; 
+
+            if (string.IsNullOrEmpty(token))
+                token = Request.Cookies["refreshToken"];
+            else
+                return BadRequest("Token is Required");
+
+            var result = await authServices.RevokeTokenAsync(token);
+
+            if(!result)
+                return BadRequest("Token is Invalid");
+
+            return Ok();
         }
     }
 }

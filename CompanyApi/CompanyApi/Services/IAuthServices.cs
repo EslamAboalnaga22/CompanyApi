@@ -7,5 +7,7 @@ namespace CompanyApi.Services
         Task<AuthModel> RegisterAsync(RegisterModel model);
         Task<AuthModel> LoginAsync(LoginGetTokenModel model);
         Task<string> AddRoleAsync(AddRoleModel model);
+        Task<AuthModel> RefreshTokenAsync(string token);
+        Task<bool> RevokeTokenAsync(string token);
     }
 }

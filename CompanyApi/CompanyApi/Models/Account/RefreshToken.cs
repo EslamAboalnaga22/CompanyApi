@@ -10,6 +10,6 @@ namespace CompanyApi.Models.Account
         public bool IsExpired => DateTime.UtcNow >= ExpireOn;
         public DateTime CreatedOn { get; set; }
         public DateTime? RevokeOn { get; set; }
-        public bool IsActive => RevokeOn != null && !IsExpired;
+        public bool IsActive => RevokeOn == null && !IsExpired;
     }
 }
